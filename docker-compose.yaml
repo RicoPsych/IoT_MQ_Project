@@ -21,11 +21,13 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
 
-  # generator:
-  #   build:
-  #   #image:
-  #   ports:
-  #   enviroment:
+  generator:
+    build: ./generator/generator
+    stdin_open: true
+    volumes:
+      - ./generator/appsettings.json:/App/appsettings.json
+    #image:
+
 
 
   # frontend:
