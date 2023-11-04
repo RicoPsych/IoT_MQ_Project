@@ -1,4 +1,5 @@
-﻿using MQTTnet;
+﻿using Microsoft.Extensions.Configuration;
+using MQTTnet;
 using MQTTnet.Client;
 
 namespace Generator.Generators
@@ -9,6 +10,13 @@ namespace Generator.Generators
         {
             this.mqttClient = mqttClient;
             this.random = random;
+        }
+
+        public override void SetParams(IConfigurationSection config)
+        {
+            Frequency = float.Parse(config["Frequency"]);
+            TopValue = Int32.Parse(config["TopValue"]);
+            BottomValue = Int32.Parse(config["BottomValue"]);
         }
 
         public override async void Generate()

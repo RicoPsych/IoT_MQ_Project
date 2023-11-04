@@ -1,4 +1,5 @@
-﻿using MQTTnet;
+﻿using Microsoft.Extensions.Configuration;
+using MQTTnet;
 using MQTTnet.Client;
 
 namespace Generator.Generators
@@ -16,6 +17,9 @@ namespace Generator.Generators
         public string Topic { get; set; }
 
         public TimeSpan PerMinute { get { return TimeSpan.FromSeconds(60 / Frequency); } }
+
+        public abstract void SetParams(IConfigurationSection config);
+        
 
         public abstract void Generate();
 

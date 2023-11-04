@@ -1,4 +1,5 @@
-﻿using MQTTnet;
+﻿using Microsoft.Extensions.Configuration;
+using MQTTnet;
 using MQTTnet.Client;
 
 namespace Generator.Generators
@@ -13,6 +14,15 @@ namespace Generator.Generators
         }
 
         public double StartValue { get; set; }
+
+        public override void SetParams(IConfigurationSection config)
+        {
+            Frequency = float.Parse(config["Frequency"]);
+            TopValue = float.Parse(config["TopValue"]);
+            BottomValue = float.Parse(config["BottomValue"]);
+            StartValue = float.Parse(config["StartValue"]);
+        }
+
 
         public override async void Generate()
         {

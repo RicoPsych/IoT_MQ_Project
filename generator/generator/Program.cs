@@ -9,20 +9,23 @@ using Generator.Generators;
 
 Console.WriteLine("Hello, World!");
 
-var configuration = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json")
-    .Build();
-
-var mqAddress = configuration.GetSection("Configuration")["Address"];
-var mqPort = Int32.Parse(configuration.GetSection("Configuration")["Port"]);
-
 var mqttFactory = new MqttFactory();
+
+
 
 if (Console.ReadLine() == "1")
 {
 
     using (var mqttClient = mqttFactory.CreateMqttClient())
     {
+
+
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .Build();
+
+        var mqAddress = configuration.GetSection("Configuration")["Address"];
+        var mqPort = Int32.Parse(configuration.GetSection("Configuration")["Port"]);
 
         var mqttClientOptions = new MqttClientOptionsBuilder()
             .WithTcpServer(mqAddress, mqPort)
@@ -35,52 +38,51 @@ if (Console.ReadLine() == "1")
         var temperature = new FloatRandomGenerator(mqttClient, random)    
         {
             Topic = "temperature",
-            TopValue = 60,
-            BottomValue = -20,
-
-            Frequency = 60f
         };
         var battery = new IntegerRandomGainGenerator(mqttClient, random)
         {
             Topic = "battery",
-            TopValue = 0,
-            BottomValue = -2,
-
-            StartValue = 100,
-            
-            Frequency = 1f
         };
-
         var altitude = new IntegerRandomGenerator(mqttClient, random)
         {
             Topic = "altitude",
-            TopValue = 8848,
-            BottomValue = -10994,
-
-            Frequency = 30f
         };
-
         var distance = new FloatRandomGainGenerator(mqttClient, random)
         {
-            Topic = "distance",
-            TopValue = 1000f,
-            BottomValue = 0f,
-            StartValue = 900f,
-            
-            Frequency = 5f
+            Topic = "distance"
         };
 
-        List<Timer> timers = new List<Timer>() { new Timer(_ => temperature.Generate(), "", TimeSpan.FromSeconds(1), temperature.PerMinute),
+
+        string input = "";
+        while (input != "q")
+        {
+            //Reload Config
+            configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            temperature.SetParams(configuration.GetSection("Sensors").GetSection("Temperature"));
+            battery.SetParams(configuration.GetSection("Sensors").GetSection("Battery"));
+            altitude.SetParams(configuration.GetSection("Sensors").GetSection("Altitude"));
+            distance.SetParams(configuration.GetSection("Sensors").GetSection("Distance"));
+
+
+            List<Timer> timers = new List<Timer>() { new Timer(_ => temperature.Generate(), "", TimeSpan.FromSeconds(1), temperature.PerMinute),
                                                  new Timer(_ => altitude.Generate(), "", TimeSpan.FromSeconds(1), altitude.PerMinute),
                                                  new Timer(_ => battery.Generate(), "", TimeSpan.FromSeconds(1), battery.PerMinute),
                                                  new Timer(_ => distance.Generate(), "", TimeSpan.FromSeconds(1), distance.PerMinute)
-        };
+            };
+
+            input = Console.ReadLine(); 
+
+            timers.ForEach(timer => timer.Change(-1, -1));
+        }
 
        
 
-        Console.ReadLine();
 
-        timers.ForEach(timer => timer.Change(-1, -1));
+
+
         await mqttClient.DisconnectAsync();
 
     }
