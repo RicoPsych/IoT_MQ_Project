@@ -1,4 +1,5 @@
 ﻿using backend.Entities;
+using backend.Repositories;
 using MQTTnet;
 using MQTTnet.Client;
 using System.Text.Json;
@@ -7,11 +8,19 @@ namespace backend.Services
 {
     public class SensorReaderBackgroundService : BackgroundService
     {
-        private readonly IConfiguration Configuration;
+        private readonly IConfiguration _configuration;
+        private readonly IDatabaseRepository<Temperature> _temperatureRepository;
+        private readonly IDatabaseRepository<Altitude> _altitudeRepository;
+        private readonly IDatabaseRepository<Distance> _distanceRepository;
+        private readonly IDatabaseRepository<Battery> _batteryRepository;
 
-        public SensorReaderBackgroundService(IConfiguration configuration)
+        public SensorReaderBackgroundService(IConfiguration configuration, IDatabaseRepository<Temperature> temperatureRepository, IDatabaseRepository<Altitude> altitudeRepository, IDatabaseRepository<Distance> distanceRepository, IDatabaseRepository<Battery> batteryRepository)
         {
-            Configuration = configuration;
+            _configuration = configuration;
+            _temperatureRepository = temperatureRepository;
+            _altitudeRepository = altitudeRepository;
+            _distanceRepository = distanceRepository;
+            _batteryRepository = batteryRepository;
         }
 
         private async Task HandleMessage(MqttApplicationMessageReceivedEventArgs e)
@@ -22,14 +31,26 @@ namespace backend.Services
             QueueMessage queueMessage = JsonSerializer.Deserialize<QueueMessage>(message.Payload);
 
             Console.WriteLine(message.Topic + ":" + queueMessage.Message);
-            //switch (message.Topic)
-            //{
-            //    //case "":
 
-            //    //case "2":
 
-            //    //default:
-            //}
+            switch (message.Topic)
+            {
+                case "temperature":
+                    _temperatureRepository.Add(new Temperature { Value = decimal.Parse(queueMessage.Message) });
+                    break;
+                case "altitude":
+                    _altitudeRepository.Add(new Altitude { Value = int.Parse(queueMessage.Message) });
+                    break;
+                case "distance":
+                    _distanceRepository.Add(new  Distance{ Value = decimal.Parse(queueMessage.Message) });
+                    break;
+                case "battery":
+                    _batteryRepository.Add(new Battery { Value = int.Parse(queueMessage.Message) });
+                    break;
+                default:
+                    break;
+
+            }
 
             return;
         }
@@ -38,7 +59,7 @@ namespace backend.Services
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var configSection = Configuration.GetSection("MessageQueue");
+            var configSection = _configuration.GetSection("MessageQueue");
             string mqAddress = configSection["Address"];
             int mqPort = Int32.Parse(configSection["Port"]);
 
@@ -47,29 +68,44 @@ namespace backend.Services
 
             using (var mqttClient = mqttFactory.CreateMqttClient())
             {
-                //try{} catch (Exception e) { Console.WriteLine("couldnt connect retrying in 5")}
+                var mqttClientOptions = new MqttClientOptionsBuilder().WithTcpServer(mqAddress, mqPort).Build();
 
-                var mqttClientOptions = new MqttClientOptionsBuilder().WithTcpServer(mqAddress,mqPort).Build();
-
-                mqttClient.ApplicationMessageReceivedAsync += HandleMessage;  
-
-                await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
+                mqttClient.ApplicationMessageReceivedAsync += HandleMessage;
 
                 var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder()
-                    .WithTopicFilter( f => { f.WithTopic("temperature"); })
-                    .WithTopicFilter( f => { f.WithTopic("altitude"); })
-                    .WithTopicFilter( f => { f.WithTopic("distance"); })
-                    .WithTopicFilter( f => { f.WithTopic("battery");})
-                    .Build();
+                .WithTopicFilter(f => { f.WithTopic("temperature"); })
+                .WithTopicFilter(f => { f.WithTopic("altitude"); })
+                .WithTopicFilter(f => { f.WithTopic("distance"); })
+                .WithTopicFilter(f => { f.WithTopic("battery"); })
+                .Build();
 
-                await mqttClient.SubscribeAsync(mqttSubscribeOptions, CancellationToken.None);
 
-                //Wait For Cancellation
-                while (!stoppingToken.IsCancellationRequested) { 
-                    
+
+
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    try 
+                    {
+                        await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
+                        await mqttClient.SubscribeAsync(mqttSubscribeOptions, CancellationToken.None);
+
+                        //Wait For Cancellation
+                        while (!stoppingToken.IsCancellationRequested && mqttClient.IsConnected)
+                        { }
+
+                        if (mqttClient.IsConnected)
+                        {
+                            await mqttClient.DisconnectAsync();
+                        }
+                    }
+                    catch (Exception e) {
+                        for (int i = 5; i > 0; i--) {
+                            Console.WriteLine($"Couldnt connect to message queue retrying in {i}");
+                            Thread.Sleep(1000);
+                        }
+                        Console.WriteLine("Retrying");
+                    };
                 }
-
-                await mqttClient.DisconnectAsync();
             }
         }
 

@@ -1,3 +1,5 @@
+using backend.Entities;
+using backend.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
@@ -6,28 +8,29 @@ namespace backend.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
 
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly IDatabaseRepository<Temperature> _temperatureRepository;
+        private readonly IDatabaseRepository<Altitude> _altitudeRepository;
+        private readonly IDatabaseRepository<Distance> _distanceRepository;
+        private readonly IDatabaseRepository<Battery> _batteryRepository;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, IDatabaseRepository<Temperature> temperatureRepository, IDatabaseRepository<Altitude> altitudeRepository, IDatabaseRepository<Distance> distanceRepository, IDatabaseRepository<Battery> batteryRepository)
         {
             _logger = logger;
+            _temperatureRepository = temperatureRepository;
+            _altitudeRepository = altitudeRepository;
+            _distanceRepository = distanceRepository;
+            _batteryRepository = batteryRepository;
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+
+
+        [HttpGet(Name = "GetSensors")]
+        public IEnumerable<Temperature> GetSensors()
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+            return _temperatureRepository.GetAll().ToArray();
+
         }
     }
 }
