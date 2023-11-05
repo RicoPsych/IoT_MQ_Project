@@ -32,18 +32,22 @@ using (var mqttClient = mqttFactory.CreateMqttClient())
     var temperature = new FloatRandomGenerator(mqttClient, random)    
     {
         Topic = "temperature",
+        Instance = 1
     };
     var battery = new IntegerRandomGainGenerator(mqttClient, random)
     {
         Topic = "battery",
+        Instance = 1
     };
     var altitude = new IntegerRandomGenerator(mqttClient, random)
     {
         Topic = "altitude",
+        Instance = 1
     };
     var distance = new FloatRandomGainGenerator(mqttClient, random)
     {
-        Topic = "distance"
+        Topic = "distance",
+        Instance = 1
     };
 
 

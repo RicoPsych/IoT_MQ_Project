@@ -24,6 +24,8 @@ services:
   generator:
     build: ./generator/generator
     stdin_open: true
+    depends_on:
+      - queue
     volumes:
       - ./generator/appsettings.json:/App/appsettings.json
     #image:

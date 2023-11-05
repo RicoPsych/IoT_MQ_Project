@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using MQTTnet;
 using MQTTnet.Client;
+using System.Text.Json;
 
 namespace Generator.Generators
 {
@@ -14,6 +15,8 @@ namespace Generator.Generators
         public T BottomValue { get; set; }
         public float Frequency { get; set; }
 
+        public int Instance {  get; set; }
+
         public string Topic { get; set; }
 
         public TimeSpan PerMinute { get { return TimeSpan.FromSeconds(60 / Frequency); } }
@@ -25,9 +28,12 @@ namespace Generator.Generators
 
         protected async Task Publish(string value)
         {
+            QueueMessage queueMessage = new QueueMessage() { Instance = this.Instance , Message = value, Time = DateTime.Now};    
+
+
             var applicationMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(Topic)
-                .WithPayload(value)
+                .WithPayload(JsonSerializer.SerializeToUtf8Bytes(queueMessage))
                 .Build();
 
             await mqttClient.PublishAsync(applicationMessage, CancellationToken.None);
