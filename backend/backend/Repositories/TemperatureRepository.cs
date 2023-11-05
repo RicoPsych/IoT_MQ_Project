@@ -2,10 +2,10 @@
 
 namespace backend.Repositories
 {
-    public class TemperatureRepository : DatabaseRepository<Temperature>
-    {
-        public TemperatureRepository(IConfiguration configuration) : base(configuration)
-        {
-        }
-    }
+    //public class TemperatureRepository : DatabaseRepository<Temperature>
+    //{
+    //    public TemperatureRepository(IConfiguration configuration) : base(configuration)
+    //    {
+    //    }
+    //}
 }

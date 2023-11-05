@@ -14,7 +14,11 @@ namespace backend.Services
         private readonly IDatabaseRepository<Distance> _distanceRepository;
         private readonly IDatabaseRepository<Battery> _batteryRepository;
 
-        public SensorReaderBackgroundService(IConfiguration configuration, IDatabaseRepository<Temperature> temperatureRepository, IDatabaseRepository<Altitude> altitudeRepository, IDatabaseRepository<Distance> distanceRepository, IDatabaseRepository<Battery> batteryRepository)
+        public SensorReaderBackgroundService(IConfiguration configuration, 
+            IDatabaseRepository<Temperature> temperatureRepository, 
+            IDatabaseRepository<Altitude> altitudeRepository, 
+            IDatabaseRepository<Distance> distanceRepository, 
+            IDatabaseRepository<Battery> batteryRepository)
         {
             _configuration = configuration;
             _temperatureRepository = temperatureRepository;
