@@ -6,7 +6,7 @@ using System;
 
 namespace backend.Repositories
 {
-    public class DatabaseRepository<T> : IDatabaseRepository<T> where T : IDocument
+    public class DatabaseRepository<T> : IDatabaseRepository<T> where T : Entities.Document
     {
         IConfiguration _configuration;
         IMongoCollection<T> collection;

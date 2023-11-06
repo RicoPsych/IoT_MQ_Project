@@ -1,5 +1,6 @@
 ﻿using backend.Entities;
 using backend.Repositories;
+using MongoDB.Bson.Serialization.Serializers;
 using MQTTnet;
 using MQTTnet.Client;
 using System.Text.Json;
@@ -40,14 +41,24 @@ namespace backend.Services
             switch (message.Topic)
             {
                 case "temperature":
-                    _temperatureRepository.Add(new Temperature { Value = (decimal)(double.Parse(queueMessage.Message)) });
-                    break;
+                    {
+                        decimal.TryParse(queueMessage.Message, out var val);    //CANNOT PARSE FLOATS
+                        _temperatureRepository.Add(new Temperature() { Value = val });
+                        break;
+                    }
+                    
                 case "altitude":
-                    _altitudeRepository.Add(new Altitude { Value = int.Parse(queueMessage.Message) });
-                    break;
+                    {
+                        _altitudeRepository.Add(new Altitude { Value = int.Parse(queueMessage.Message) }); 
+                        break;
+                    }
                 case "distance":
-                    _distanceRepository.Add(new  Distance{ Value = (decimal)double.Parse(queueMessage.Message) });
-                    break;
+                    {
+                         double.TryParse(queueMessage.Message, out var val);
+                        
+                        _distanceRepository.Add(new Distance { Value = (decimal)val}); //CANNOT PARSE FLOATS
+                        break;
+                    }
                 case "battery":
                     _batteryRepository.Add(new Battery { Value = int.Parse(queueMessage.Message) });
                     break;
