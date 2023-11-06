@@ -14,7 +14,7 @@ namespace backend.Services
         private readonly IDatabaseRepository<Distance> _distanceRepository;
         private readonly IDatabaseRepository<Battery> _batteryRepository;
 
-        public SensorReaderBackgroundService(IConfiguration configuration, 
+        public SensorReaderBackgroundService(IConfiguration configuration,
             IDatabaseRepository<Temperature> temperatureRepository, 
             IDatabaseRepository<Altitude> altitudeRepository, 
             IDatabaseRepository<Distance> distanceRepository, 
@@ -40,13 +40,13 @@ namespace backend.Services
             switch (message.Topic)
             {
                 case "temperature":
-                    _temperatureRepository.Add(new Temperature { Value = decimal.Parse(queueMessage.Message) });
+                    _temperatureRepository.Add(new Temperature { Value = (decimal)(double.Parse(queueMessage.Message)) });
                     break;
                 case "altitude":
                     _altitudeRepository.Add(new Altitude { Value = int.Parse(queueMessage.Message) });
                     break;
                 case "distance":
-                    _distanceRepository.Add(new  Distance{ Value = decimal.Parse(queueMessage.Message) });
+                    _distanceRepository.Add(new  Distance{ Value = (decimal)double.Parse(queueMessage.Message) });
                     break;
                 case "battery":
                     _batteryRepository.Add(new Battery { Value = int.Parse(queueMessage.Message) });
