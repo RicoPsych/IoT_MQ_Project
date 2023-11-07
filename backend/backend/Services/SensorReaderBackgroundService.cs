@@ -1,8 +1,10 @@
 ﻿using backend.Entities;
 using backend.Repositories;
+using Backend.Configuration;
 using MongoDB.Bson.Serialization.Serializers;
 using MQTTnet;
 using MQTTnet.Client;
+using System.Globalization;
 using System.Text.Json;
 
 namespace backend.Services
@@ -35,38 +37,36 @@ namespace backend.Services
             MqttApplicationMessage message = e.ApplicationMessage;
             QueueMessage queueMessage = JsonSerializer.Deserialize<QueueMessage>(message.Payload);
 
-            Console.WriteLine(message.Topic + ":" + queueMessage.Message);
-
-
             switch (message.Topic)
             {
                 case "temperature":
                     {
-                        decimal.TryParse(queueMessage.Message, out var val);    //CANNOT PARSE FLOATS
+                        var val = decimal.Parse(queueMessage.Message, CultureInfo.InvariantCulture);
                         _temperatureRepository.Add(new Temperature() { Value = val });
                         break;
                     }
-                    
                 case "altitude":
                     {
-                        _altitudeRepository.Add(new Altitude { Value = int.Parse(queueMessage.Message) }); 
+                        _altitudeRepository.Add(new Altitude { Value = int.Parse(queueMessage.Message, CultureInfo.InvariantCulture) }); 
                         break;
                     }
                 case "distance":
                     {
-                         double.TryParse(queueMessage.Message, out var val);
+                        var val = decimal.Parse(queueMessage.Message, CultureInfo.InvariantCulture);
                         
-                        _distanceRepository.Add(new Distance { Value = (decimal)val}); //CANNOT PARSE FLOATS
+                        _distanceRepository.Add(new Distance { Value = val}); //CANNOT PARSE FLOATS
                         break;
                     }
                 case "battery":
-                    _batteryRepository.Add(new Battery { Value = int.Parse(queueMessage.Message) });
-                    break;
+                    {
+                        _batteryRepository.Add(new Battery { Value = int.Parse(queueMessage.Message, CultureInfo.InvariantCulture) });
+                        break;
+                    }
                 default:
                     break;
 
             }
-
+            Console.WriteLine(message.Topic + ":" + queueMessage.Message);
             return;
         }
         
@@ -74,9 +74,9 @@ namespace backend.Services
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var configSection = _configuration.GetSection("MessageQueue");
-            string mqAddress = configSection["Address"];
-            int mqPort = Int32.Parse(configSection["Port"]);
+            var mqConfig = _configuration.GetSection("MessageQueue").Get<MessageQueueConfig>();
+            string mqAddress = mqConfig.Address;
+            int mqPort = mqConfig.Port;
 
 
             var mqttFactory = new MqttFactory();

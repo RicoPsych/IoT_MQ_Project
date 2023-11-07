@@ -24,12 +24,27 @@ services:
   generator:
     build: ./generator/generator
     stdin_open: true
+    deploy:
+      mode: replicated
+      replicas: 4
     depends_on:
       - queue
     volumes:
       - ./generator/appsettings.json:/App/appsettings.json
-    #image:
+    
 
+  backend:
+    build: ./backend/backend
+    container_name: backend
+    #image:
+    ports:
+      - '7137:7137'
+      - '7136:7136'
+    depends_on:
+        - queue
+        - database
+    volumes:
+     - ./backend/appsettings.json:/App/appsettings.json
 
 
   # frontend:
@@ -39,12 +54,6 @@ services:
   #   enviroment:
   #   networks:
   #     - networkName
-
-  # backend:
-  #   build:
-  #   #image:
-  #   ports:
-  #   enviroment:
 
 
 #

@@ -1,16 +1,16 @@
 using backend.Entities;
 using backend.Repositories;
 using backend.Services;
-
-
-
-
-var builder = WebApplication.CreateBuilder(args);
-
+using Backend.Configuration;
 
 var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-builder.Services.Configure<IConfiguration>(configuration);
+var builder = WebApplication.CreateBuilder();
 
+var webHostConfiguration = configuration.GetSection("Backend").Get<WebHostConfig>();
+
+builder.WebHost.UseUrls(webHostConfiguration.Urls);
+
+builder.Services.Configure<IConfiguration>(configuration);
 builder.Services.AddSingleton<IDatabaseRepository<Temperature>, DatabaseRepository<Temperature>>();
 builder.Services.AddSingleton<IDatabaseRepository<Altitude>, DatabaseRepository<Altitude>>();
 builder.Services.AddSingleton<IDatabaseRepository<Battery>, DatabaseRepository<Battery>>();
@@ -19,10 +19,7 @@ builder.Services.AddSingleton<IDatabaseRepository<Distance>, DatabaseRepository<
 builder.Services.AddHostedService<SensorReaderBackgroundService>();
 
 
-
-// Add services to the container.
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 
 builder.Services.AddEndpointsApiExplorer();
@@ -37,7 +34,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

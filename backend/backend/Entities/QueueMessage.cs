@@ -2,7 +2,7 @@
 
 namespace backend.Entities
 {
-    [DataContract]
+
     [Serializable]
     public class QueueMessage
     {

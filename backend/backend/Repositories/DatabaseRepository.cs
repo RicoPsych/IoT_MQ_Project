@@ -1,5 +1,6 @@
 ﻿using Amazon.Runtime.Documents;
 using backend.Entities;
+using Backend.Configuration;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
@@ -8,21 +9,15 @@ namespace backend.Repositories
 {
     public class DatabaseRepository<T> : IDatabaseRepository<T> where T : Entities.Document
     {
-        IConfiguration _configuration;
+        //IConfiguration _configuration;
         IMongoCollection<T> collection;
 
         public DatabaseRepository(IConfiguration configuration)
         {
-            _configuration = configuration;
-            string address = _configuration.GetSection("Database")["Address"];
-            string port = _configuration.GetSection("Database")["Port"];
-            string name = _configuration.GetSection("Database")["Name"];
-            string user = _configuration.GetSection("Database")["User"];
-            string password = _configuration.GetSection("Database")["Password"];
+            var dbConfiguration = configuration.GetSection("Database").Get<DatabaseConfig>();
+            MongoClient dbClient = new MongoClient($"mongodb://{dbConfiguration.User}:{dbConfiguration.Password}@{dbConfiguration.Address}:{dbConfiguration.Port}");
 
-            MongoClient dbClient = new MongoClient($"mongodb://{user}:{password}@{address}:{port}");
-
-            var database = dbClient.GetDatabase(name);
+            var database = dbClient.GetDatabase(dbConfiguration.Name);
             collection = database.GetCollection<T>(GetCollectionName(typeof(T)));
         }
 
