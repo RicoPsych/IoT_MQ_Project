@@ -6,6 +6,17 @@ using Backend.Configuration;
 var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 var builder = WebApplication.CreateBuilder();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("*",
+                          policy =>
+                          {
+                              policy.AllowAnyOrigin()
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod();
+                          });
+});
+
 var webHostConfiguration = configuration.GetSection("Backend").Get<WebHostConfig>();
 
 builder.WebHost.UseUrls(webHostConfiguration.Urls);
@@ -35,7 +46,7 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
-
+app.UseCors("*");
 app.UseAuthorization();
 
 app.MapControllers();
