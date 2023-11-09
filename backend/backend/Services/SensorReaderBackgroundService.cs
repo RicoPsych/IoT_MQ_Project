@@ -66,7 +66,7 @@ namespace backend.Services
                     break;
 
             }
-            Console.WriteLine(message.Topic + ":" + queueMessage.Message);
+            Console.WriteLine(message.Topic+":"+ queueMessage.Instance + ":" + queueMessage.Message);
             return;
         }
         

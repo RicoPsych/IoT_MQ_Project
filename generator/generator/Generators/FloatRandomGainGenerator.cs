@@ -4,30 +4,32 @@ using MQTTnet.Client;
 
 namespace Generator.Generators
 {
-    internal class FloatRandomGainGenerator : Generator<float>
+    internal class FloatRandomGainGenerator : Generator<double>
     {
 
-        public FloatRandomGainGenerator(IMqttClient mqttClient, Random random)
-        {
-            this.mqttClient = mqttClient;
-            this.random = random;
-        }
+        public FloatRandomGainGenerator(IMqttClient mqttClient, Random random) : base(mqttClient, random) {}
 
         public double StartValue { get; set; }
-
+        public double CurrentValue { get; set; }    
+        protected override double Parse(string value) => double.Parse(value);
+        
         public override void SetParams(IConfigurationSection config)
         {
-            Frequency = float.Parse(config["Frequency"]);
-            TopValue = float.Parse(config["TopValue"]);
-            BottomValue = float.Parse(config["BottomValue"]);
-            StartValue = float.Parse(config["StartValue"]);
+            //StartValue = float.Parse(config["StartValue"]);
+            var newStartValue = double.Parse(config["StartValue"]);
+            if (StartValue != newStartValue)
+            {
+                StartValue = newStartValue;
+                CurrentValue = StartValue;
+            }
+            base.SetParams(config);
         }
 
 
         public override async void Generate()
         {
-            StartValue += random.NextDouble() * (TopValue - BottomValue) + BottomValue;
-            await Publish(StartValue.ToString());
+            CurrentValue += random.NextDouble() * (TopValue - BottomValue) + BottomValue;
+            await Publish(CurrentValue.ToString());
         }
     }
 }

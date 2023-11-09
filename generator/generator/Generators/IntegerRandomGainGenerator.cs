@@ -6,27 +6,26 @@ namespace Generator.Generators
 {
     public class IntegerRandomGainGenerator : Generator<int>
     {
-        public IntegerRandomGainGenerator(IMqttClient mqttClient, Random random)
-        {
-            this.mqttClient = mqttClient;
-            this.random = random;
-        }
-
+        public IntegerRandomGainGenerator(IMqttClient mqttClient, Random random) : base (mqttClient,random) {}
         public int StartValue { get; set; }
-
-
+        public int CurrentValue { get; set; }   
+        protected override int Parse(string value) => int.Parse(value);
         public override void SetParams(IConfigurationSection config)
         {
-            Frequency = float.Parse(config["Frequency"]);
-            TopValue = Int32.Parse(config["TopValue"]);
-            BottomValue = Int32.Parse(config["BottomValue"]);
-            StartValue = Int32.Parse(config["StartValue"]); 
-        }
+            var newStartValue = int.Parse(config["StartValue"]); 
+            if (StartValue != newStartValue)
+            {
+                StartValue = newStartValue;
+                CurrentValue = StartValue;
+            }
 
+
+            base.SetParams(config);
+        }
         public override async void Generate()
         {
-            StartValue += random.Next(BottomValue, TopValue + 1);
-            await Publish(StartValue.ToString());
+            CurrentValue += random.Next(BottomValue, TopValue + 1);
+            await Publish(CurrentValue.ToString());
         }
     }
 }

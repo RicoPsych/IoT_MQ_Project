@@ -6,19 +6,8 @@ namespace Generator.Generators
 {
     internal class IntegerRandomGenerator : Generator<int>
     {
-        public IntegerRandomGenerator(IMqttClient mqttClient, Random random)
-        {
-            this.mqttClient = mqttClient;
-            this.random = random;
-        }
-
-        public override void SetParams(IConfigurationSection config)
-        {
-            Frequency = float.Parse(config["Frequency"]);
-            TopValue = Int32.Parse(config["TopValue"]);
-            BottomValue = Int32.Parse(config["BottomValue"]);
-        }
-
+        public IntegerRandomGenerator(IMqttClient mqttClient, Random random) : base(mqttClient, random) {}
+        protected override int Parse(string value) => int.Parse(value);
         public override async void Generate()
         {
             var value = random.Next(BottomValue, TopValue + 1);
