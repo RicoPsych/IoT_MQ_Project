@@ -23,7 +23,9 @@ namespace Generator.Generators
 
         public abstract void SetParams(IConfigurationSection config);
         
-
+        //TODO return timer
+        //Change timer with setParams
+        
         public abstract void Generate();
 
         protected async Task Publish(string value)

@@ -50,6 +50,17 @@ using (var mqttClient = mqttFactory.CreateMqttClient())
         Instance = 1
     };
 
+    temperature.SetParams(configuration.GetSection("Sensors").GetSection("Temperature"));
+    battery.SetParams(configuration.GetSection("Sensors").GetSection("Battery"));
+    altitude.SetParams(configuration.GetSection("Sensors").GetSection("Altitude"));
+    distance.SetParams(configuration.GetSection("Sensors").GetSection("Distance"));
+
+    List<Timer> timers = new List<Timer>() { new Timer(_ => temperature.Generate(), "", TimeSpan.FromSeconds(1), temperature.PerMinute),
+                                            new Timer(_ => altitude.Generate(), "", TimeSpan.FromSeconds(1), altitude.PerMinute),
+                                            new Timer(_ => battery.Generate(), "", TimeSpan.FromSeconds(1), battery.PerMinute),
+                                            new Timer(_ => distance.Generate(), "", TimeSpan.FromSeconds(1), distance.PerMinute)
+    };
+
 
     string input = "";
     while (input != "q")
@@ -65,15 +76,12 @@ using (var mqttClient = mqttFactory.CreateMqttClient())
         distance.SetParams(configuration.GetSection("Sensors").GetSection("Distance"));
 
 
-        List<Timer> timers = new List<Timer>() { new Timer(_ => temperature.Generate(), "", TimeSpan.FromSeconds(1), temperature.PerMinute),
-                                                new Timer(_ => altitude.Generate(), "", TimeSpan.FromSeconds(1), altitude.PerMinute),
-                                                new Timer(_ => battery.Generate(), "", TimeSpan.FromSeconds(1), battery.PerMinute),
-                                                new Timer(_ => distance.Generate(), "", TimeSpan.FromSeconds(1), distance.PerMinute)
-        };
-        Console.WriteLine("Started, enter q to exit");
-        input = Console.ReadLine(); 
 
-        timers.ForEach(timer => timer.Change(-1, -1));
+//        Console.WriteLine("Started, enter q to exit");
+//        input = Console.ReadLine(); 
+        Thread.Sleep(1000);
     }
+    timers.ForEach(timer => timer.Change(-1, -1));
+    
     await mqttClient.DisconnectAsync();
 }
