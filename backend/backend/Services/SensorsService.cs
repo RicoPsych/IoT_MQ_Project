@@ -21,6 +21,11 @@ namespace Backend.Services
             _repository = repository;
         }
 
+        public void Clear()
+        {
+            _repository.Clear();
+        }
+
 
         public decimal GetAverage(string[] types, int[] instances, int limit)
         {

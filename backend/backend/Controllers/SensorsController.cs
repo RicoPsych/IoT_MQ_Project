@@ -23,6 +23,14 @@ namespace backend.Controllers
         }
 
 
+        [HttpDelete]
+        public void Clear()
+        {
+            _sensorsService.Clear();
+            Ok();
+            return; 
+        }
+
         [HttpGet("GetAvg")]
         public decimal GetAvg([FromQuery] string[] types, [FromQuery] int[] instances)
         {

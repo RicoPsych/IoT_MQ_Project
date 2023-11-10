@@ -38,6 +38,15 @@ namespace backend.Repositories
             collection.InsertOne(document);
             return;
         }
+
+        public void Clear()
+        {
+            var filter = Builders<T>.Filter.Empty;
+            collection.DeleteMany(filter);
+            return;
+        }
+
+
         public T FindById(string id)
         {
             var objectId = new ObjectId(id);

@@ -6,6 +6,7 @@ namespace backend.Repositories
     public interface IDatabaseRepository<T> where T : IDocument
     {
         void Add(T document);
+        void Clear();
         T FindById(string id);
         IEnumerable<T> GetAll();
         IEnumerable<T> Get(
