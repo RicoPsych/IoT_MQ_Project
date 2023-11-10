@@ -12,64 +12,27 @@ namespace backend.Services
     public class SensorReaderBackgroundService : BackgroundService
     {
         private readonly IConfiguration _configuration;
-        private readonly IDatabaseRepository<Temperature> _temperatureRepository;
-        private readonly IDatabaseRepository<Altitude> _altitudeRepository;
-        private readonly IDatabaseRepository<Distance> _distanceRepository;
-        private readonly IDatabaseRepository<Battery> _batteryRepository;
+        DatabaseRepository<Measurement> _repository;
 
         public SensorReaderBackgroundService(IConfiguration configuration,
-            IDatabaseRepository<Temperature> temperatureRepository, 
-            IDatabaseRepository<Altitude> altitudeRepository, 
-            IDatabaseRepository<Distance> distanceRepository, 
-            IDatabaseRepository<Battery> batteryRepository)
+            DatabaseRepository<Measurement> repository)
         {
             _configuration = configuration;
-            _temperatureRepository = temperatureRepository;
-            _altitudeRepository = altitudeRepository;
-            _distanceRepository = distanceRepository;
-            _batteryRepository = batteryRepository;
+            _repository = repository;
         }
 
         private async Task HandleMessage(MqttApplicationMessageReceivedEventArgs e)
         {
-
-
             MqttApplicationMessage message = e.ApplicationMessage;
             QueueMessage queueMessage = JsonSerializer.Deserialize<QueueMessage>(message.Payload);
 
-            switch (message.Topic)
-            {
-                case "temperature":
-                    {
-                        var val = decimal.Parse(queueMessage.Message, CultureInfo.InvariantCulture);
-                        _temperatureRepository.Add(new Temperature() { Value = val });
-                        break;
-                    }
-                case "altitude":
-                    {
-                        _altitudeRepository.Add(new Altitude { Value = int.Parse(queueMessage.Message, CultureInfo.InvariantCulture) }); 
-                        break;
-                    }
-                case "distance":
-                    {
-                        var val = decimal.Parse(queueMessage.Message, CultureInfo.InvariantCulture);
-                        
-                        _distanceRepository.Add(new Distance { Value = val}); //CANNOT PARSE FLOATS
-                        break;
-                    }
-                case "battery":
-                    {
-                        _batteryRepository.Add(new Battery { Value = int.Parse(queueMessage.Message, CultureInfo.InvariantCulture) });
-                        break;
-                    }
-                default:
-                    break;
+            var val = decimal.Parse(queueMessage.Message, CultureInfo.InvariantCulture);
+            _repository.Add(new Measurement() { Value = val, Time = queueMessage.Time, Instance = queueMessage.Instance, SensorType = message.Topic });
 
-            }
-            Console.WriteLine(message.Topic+":"+ queueMessage.Instance + ":" + queueMessage.Message);
+            Console.WriteLine(message.Topic + ":" + queueMessage.Instance + ":" + queueMessage.Message);
             return;
         }
-        
+
 
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -115,7 +78,7 @@ namespace backend.Services
                     }
                     catch (Exception e) {
                         for (int i = 5; i > 0; i--) {
-                            Console.WriteLine($"Couldnt connect to message queue retrying in {i}");
+                            Console.WriteLine($"Couldn't connect to message queue retrying in {i}");
                             Thread.Sleep(1000);
                         }
                         Console.WriteLine("Retrying");

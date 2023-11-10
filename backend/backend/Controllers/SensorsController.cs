@@ -1,5 +1,8 @@
 using backend.Entities;
 using backend.Repositories;
+using Backend.Filters;
+using Backend.Models;
+using Backend.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
@@ -10,49 +13,53 @@ namespace backend.Controllers
     {
 
         private readonly ILogger<SensorsController> _logger;
-        private readonly IDatabaseRepository<Temperature> _temperatureRepository;
-        private readonly IDatabaseRepository<Altitude> _altitudeRepository;
-        private readonly IDatabaseRepository<Distance> _distanceRepository;
-        private readonly IDatabaseRepository<Battery> _batteryRepository;
+        private readonly SensorsService _sensorsService;
 
         public SensorsController(ILogger<SensorsController> logger,
-            IDatabaseRepository<Temperature> temperatureRepository, 
-            IDatabaseRepository<Distance> distanceRepository, 
-            IDatabaseRepository<Altitude> altitudeRepository, 
-            IDatabaseRepository<Battery> batteryRepository)
+            SensorsService sensorsService)
         {
             _logger = logger;
-            _temperatureRepository = temperatureRepository;
-            _altitudeRepository = altitudeRepository;
-            _distanceRepository = distanceRepository;
-            _batteryRepository = batteryRepository;
+            _sensorsService = sensorsService;
         }
 
 
-
-        [HttpGet("GetTemperature")]
-        public IEnumerable<Temperature> GetTemperature()
+        [HttpGet("GetAvg")]
+        public decimal GetAvg([FromQuery] string[] types, [FromQuery] int[] instances)
         {
-            return _temperatureRepository.GetAll().ToArray();
-
+            return _sensorsService.GetAverage(types,instances, 100);
         }
-        [HttpGet("GetAltitude")]
-        public IEnumerable<Altitude> GetAltitude()
-        {
-            return _altitudeRepository.GetAll().ToArray();
 
+        [HttpGet("GetLast")]
+        public PresentationModel GetLast([FromQuery] string[] types, [FromQuery] int[] instances)
+        {
+            return new PresentationModel(_sensorsService.GetLast(types.Select(type=> type.ToLower()).ToArray(), instances));
         }
-        [HttpGet("GetDistance")]
-        public IEnumerable<Distance> GetDistance()
-        {
-            return _distanceRepository.GetAll().ToArray();
 
+
+        [HttpGet("GetAll")]
+        public IEnumerable<PresentationModel> GetAll()
+        {
+            return _sensorsService.GetAll().Select(measurement=>new PresentationModel(measurement));
         }
-        [HttpGet("GetBattery")]
-        public IEnumerable<Battery> GetBattery()
-        {
-            return _batteryRepository.GetAll().ToArray();
 
+        //[HttpGet("Get")]
+        //public IEnumerable<PresentationModel> Get(
+        //    [FromQuery] int? limit,
+        //    [FromQuery] int? sortBy,
+        //    [FromQuery] IEnumerable<string>? sensorTypes,
+        //    [FromQuery] IEnumerable<int>? instances,
+        //    [FromQuery] DateTime? startTime,
+        //    [FromQuery] DateTime? endTime)
+        //{
+        //    return _sensorsService.Get(limit, sortBy, sensorTypes, instances, startTime, endTime).Select(measurement => new PresentationModel(measurement));
+        //}
+
+        [HttpGet("Get")]
+        public IEnumerable<PresentationModel> Get(
+            [FromQuery] Sort? sort, 
+            [FromQuery] Filters? filters )
+        {
+            return _sensorsService.Get(filters ?? new Filters(), sort ?? new Sort()).Select(measurement => new PresentationModel(measurement));
         }
     }
 }
