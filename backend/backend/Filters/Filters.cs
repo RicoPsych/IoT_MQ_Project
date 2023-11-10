@@ -13,7 +13,7 @@ namespace Backend.Filters
 
     public class Sort
     {
-        public SortBy By { get; set; } = SortBy.Time;
+        public SortBy SortBy { get; set; } = SortBy.Time;
         public SortOrder Order { get; set; } = SortOrder.Descending;
     }
 
