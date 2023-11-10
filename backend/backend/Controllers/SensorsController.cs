@@ -3,7 +3,10 @@ using backend.Repositories;
 using Backend.Filters;
 using Backend.Models;
 using Backend.Services;
+using Backend.Utilities;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
+using System.Text.Json;
 
 namespace backend.Controllers
 {
@@ -31,6 +34,8 @@ namespace backend.Controllers
             return; 
         }
 
+
+
         [HttpGet("GetAvg")]
         public decimal GetAvg([FromQuery] string[] types, [FromQuery] int[] instances)
         {
@@ -50,24 +55,33 @@ namespace backend.Controllers
             return _sensorsService.GetAll().Select(measurement=>new PresentationModel(measurement));
         }
 
-        //[HttpGet("Get")]
-        //public IEnumerable<PresentationModel> Get(
-        //    [FromQuery] int? limit,
-        //    [FromQuery] int? sortBy,
-        //    [FromQuery] IEnumerable<string>? sensorTypes,
-        //    [FromQuery] IEnumerable<int>? instances,
-        //    [FromQuery] DateTime? startTime,
-        //    [FromQuery] DateTime? endTime)
-        //{
-        //    return _sensorsService.Get(limit, sortBy, sensorTypes, instances, startTime, endTime).Select(measurement => new PresentationModel(measurement));
-        //}
-
         [HttpGet("Get")]
         public IEnumerable<PresentationModel> Get(
             [FromQuery] Sort? sort, 
             [FromQuery] Filters? filters )
         {
             return _sensorsService.Get(filters ?? new Filters(), sort ?? new Sort()).Select(measurement => new PresentationModel(measurement));
+        }
+
+        [HttpGet("GetCsv")]
+        public FileResult GetCsv(
+            [FromQuery] Sort? sort,
+            [FromQuery] Filters? filters)
+        {
+            var csvContent = CsvSerializer.SerializeToUtf8Bytes(_sensorsService.Get(filters ?? new Filters(), sort ?? new Sort())
+                .Select(measurement => new PresentationModel(measurement)));       
+            return File(csvContent, "text/csv", "Measurements.csv");
+        }
+
+        [HttpGet("GetJson")]
+        public FileResult GetJson(
+            [FromQuery] Sort? sort,
+            [FromQuery] Filters? filters)
+        {
+            var jsonContent = JsonSerializer.SerializeToUtf8Bytes(_sensorsService.Get(filters ?? new Filters(), sort ?? new Sort())
+                .Select(measurement => new PresentationModel(measurement)));
+            return File(jsonContent, "application/json", "Measurements.json");
+
         }
     }
 }
