@@ -87,7 +87,7 @@ export default {
     fetchData() {
       for (const key in this.phoneData.last) {
         fetch(
-          `https://localhost:7136/Sensors/GetAvg?types=${key}&instances=${this.selectedDevice}`
+          `http://localhost:7136/Sensors/GetAvg?types=${key}&instances=${this.selectedDevice}`
         )
           .then((r) => {
             return r.json();
@@ -97,7 +97,7 @@ export default {
             return;
           });
         fetch(
-          `https://localhost:7136/Sensors/GetLast?types=${key}&instances=${this.selectedDevice}`
+          `http://localhost:7136/Sensors/GetLast?types=${key}&instances=${this.selectedDevice}`
         )
           .then((r) => {
             return r.json();
