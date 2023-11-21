@@ -154,7 +154,7 @@ export default {
         requestParameters += ("&EndTime=" + dayjs(this.filters.dateTo).add(1,'day').format("YYYY/MM/DD"));
       }
       try {
-        fetch("https://localhost:7137/Sensors/Get" + requestParameters)
+        fetch("http://localhost:7136/Sensors/Get" + requestParameters)
           .then((r) => {
             return r.json();
           })
