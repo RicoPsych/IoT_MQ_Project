@@ -47,15 +47,12 @@ services:
      - ./backend/appsettings.json:/App/appsettings.json
 
 
-  # frontend:
-  #   build:
-  #   #image:
-  #   ports:
-  #   enviroment:
-  #   networks:
-  #     - networkName
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+     - '8080:8080'
+    environment:
+     - PORT=8080
 
-
-#
-#networks:
 
