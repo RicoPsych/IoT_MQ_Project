@@ -11,7 +11,7 @@ namespace Backend.Models
 
         public DateTime Time { get; set; }
 
-        public decimal Value { get; set; }
+        public double Value { get; set; }
 
         public int Instance {  get; set; }
         public string Type { get; set; }

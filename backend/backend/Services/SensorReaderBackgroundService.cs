@@ -26,7 +26,7 @@ namespace backend.Services
             MqttApplicationMessage message = e.ApplicationMessage;
             QueueMessage queueMessage = JsonSerializer.Deserialize<QueueMessage>(message.Payload);
 
-            var val = decimal.Parse(queueMessage.Message, CultureInfo.InvariantCulture);
+            var val = double.Parse(queueMessage.Message, CultureInfo.InvariantCulture);
             _repository.Add(new Measurement() { Value = val, Time = queueMessage.Time, Instance = queueMessage.Instance, SensorType = message.Topic });
 
             Console.WriteLine(message.Topic + ":" + queueMessage.Instance + ":" + queueMessage.Message);
