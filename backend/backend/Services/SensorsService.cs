@@ -30,13 +30,13 @@ namespace Backend.Services
         public decimal GetAverage(string[] types, int[] instances, int limit)
         {
             var list = _repository.Get(null, new Filters.Filters { SensorTypes = types, Limit = limit, Instances = instances });
-            return list.Select(measurement => measurement.Value).Average();
+            return list.Select(measurement => measurement.Value).DefaultIfEmpty(0).Average();
         }
 
         public Measurement GetLast(string[] types, int[] instances)
         {
             var list = _repository.Get(null, new Filters.Filters { SensorTypes = types, Limit = 1 , Instances = instances });
-            return list.FirstOrDefault();
+            return list.FirstOrDefault(new Measurement());
         }
 
         public IEnumerable<Measurement> GetAll() {

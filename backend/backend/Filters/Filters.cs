@@ -26,7 +26,7 @@ namespace Backend.Filters
     public enum SortBy
     {
         Time,
-        Type,
+        SensorType,
         Instance,
         Value
     }
