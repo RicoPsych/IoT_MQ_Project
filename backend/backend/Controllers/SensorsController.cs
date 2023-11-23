@@ -37,7 +37,7 @@ namespace backend.Controllers
 
 
         [HttpGet("GetAvg")]
-        public decimal GetAvg([FromQuery] string[] types, [FromQuery] int[] instances)
+        public double GetAvg([FromQuery] string[] types, [FromQuery] int[] instances)
         {
             return _sensorsService.GetAverage(types,instances, 100);
         }

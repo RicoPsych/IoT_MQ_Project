@@ -4,6 +4,7 @@ using backend.Repositories;
 using Backend.Filters;
 using Backend.Models;
 using Microsoft.OpenApi.Extensions;
+using MongoDB.Driver;
 using System.Collections.Generic;
 
 namespace Backend.Services
@@ -27,16 +28,16 @@ namespace Backend.Services
         }
 
 
-        public decimal GetAverage(string[] types, int[] instances, int limit)
+        public double GetAverage(string[] types, int[] instances, int limit)
         {
             var list = _repository.Get(null, new Filters.Filters { SensorTypes = types, Limit = limit, Instances = instances });
-            return list.Select(measurement => measurement.Value).Average();
+            return list.Select(measurement => measurement.Value).DefaultIfEmpty(0).Average();
         }
 
         public Measurement GetLast(string[] types, int[] instances)
         {
             var list = _repository.Get(null, new Filters.Filters { SensorTypes = types, Limit = 1 , Instances = instances });
-            return list.FirstOrDefault();
+            return list.FirstOrDefault(new Measurement());
         }
 
         public IEnumerable<Measurement> GetAll() {
@@ -57,6 +58,7 @@ namespace Backend.Services
         public IEnumerable<Measurement> Get(Filters.Filters filters, Sort sort)
         {
             var list = _repository.Get(sort, filters);
+            
             return list;
         }
     }
