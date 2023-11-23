@@ -1,13 +1,9 @@
 <template>
 <div class="radio-input">
   <input id="r1" name="device" type="radio" class="input" value="1" @input="$emit('update:modelValue', $event.target.value)" checked="">
-  <!-- <label for="r1">a</label> -->
   <input id="r2" name="device" type="radio" class="input" value="2" @input="$emit('update:modelValue', $event.target.value)">
-  <!-- <label for="r2">b</label> -->
   <input id="r3" name="device" type="radio" class="input" value="3" @input="$emit('update:modelValue', $event.target.value)">
-  <!-- <label for="r3">c</label> -->
   <input id="r4" name="device" type="radio" class="input" value="4" @input="$emit('update:modelValue', $event.target.value)">
-  <!-- <label for="r4">d</label> -->
 </div>
 </template>
 
@@ -22,9 +18,8 @@ export default {
 
 <style scoped>
 .input {
-  -webkit-appearance: none;
- /* remove default */
   /* display: block; */
+  -webkit-appearance: none;
   margin: 10px;
   width: 24px;
   height: 24px;
@@ -51,7 +46,6 @@ export default {
 }
 
 /* The up/down direction logic */
-
 .input,
 .input:active {
   background-position: 24px 0;

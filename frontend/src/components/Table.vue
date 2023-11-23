@@ -1,9 +1,5 @@
 <template>
-  <Chart
-    v-if="showChart"
-    @closeChart="toggleChart"
-    :data="data"
-  />
+  <Chart v-if="showChart" @closeChart="toggleChart" :data="data" />
   <div class="container">
     <div v-if="loading">
       <h2 style="color: hsla(160, 100%, 37%, 1)">
@@ -68,30 +64,56 @@
       <table>
         <thead>
           <tr>
+            <th>Index</th>
             <th @click="sort(2)">
               Device
-              <Icon icon="bx:up-arrow" :class="{active : isSortArrowActive[4]}" />
-              <Icon icon="bx:down-arrow" :class="{active : isSortArrowActive[5]}"/>
+              <Icon
+                icon="bx:up-arrow"
+                :class="{ active: isSortArrowActive[4] }"
+              />
+              <Icon
+                icon="bx:down-arrow"
+                :class="{ active: isSortArrowActive[5] }"
+              />
             </th>
             <th @click="sort(1)">
               Parameter
-              <Icon icon="bx:up-arrow" :class="{active : isSortArrowActive[2]}"/>
-              <Icon icon="bx:down-arrow" :class="{active : isSortArrowActive[3]}"/>
+              <Icon
+                icon="bx:up-arrow"
+                :class="{ active: isSortArrowActive[2] }"
+              />
+              <Icon
+                icon="bx:down-arrow"
+                :class="{ active: isSortArrowActive[3] }"
+              />
             </th>
             <th @click="sort(0)">
               Date
-              <Icon icon="bx:up-arrow" :class="{active : isSortArrowActive[0]}"/>
-              <Icon icon="bx:down-arrow" :class="{active : isSortArrowActive[1]}"/>
+              <Icon
+                icon="bx:up-arrow"
+                :class="{ active: isSortArrowActive[0] }"
+              />
+              <Icon
+                icon="bx:down-arrow"
+                :class="{ active: isSortArrowActive[1] }"
+              />
             </th>
             <th @click="sort(3)">
               Value
-              <Icon icon="bx:up-arrow" :class="{active : isSortArrowActive[6]}"/>
-              <Icon icon="bx:down-arrow" :class="{active : isSortArrowActive[7]}"/>
+              <Icon
+                icon="bx:up-arrow"
+                :class="{ active: isSortArrowActive[6] }"
+              />
+              <Icon
+                icon="bx:down-arrow"
+                :class="{ active: isSortArrowActive[7] }"
+              />
             </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(d, index) in data" :key="index">
+          <tr v-for="(d, index) in data" :key="index" class="data-row">
+            <td>{{ index + 1 }}</td>
             <td>{{ d.instance }}</td>
             <td>{{ d.type }}</td>
             <td>{{ d.time }}</td>
@@ -137,43 +159,24 @@ export default {
   },
   computed: {
     isSortArrowActive() {
-      // if (this.sorting == null) return null;
       let temp = [];
-      for (let i = 0; i < 8; i ++) {
-        temp.push(this.sorting.currentSortBy*2 + this.sorting.currentSortOrder == i);
+      for (let i = 0; i < 8; i++) {
+        temp.push(
+          this.sorting.currentSortBy * 2 + this.sorting.currentSortOrder == i
+        );
       }
       return temp;
     },
   },
   created() {
-    // this.fetchData();
     this.submitFilter();
   },
   methods: {
-    // fetchData() {
-    //   this.loading = true;
-    //   this.data = null;
-    //   try {
-    //     fetch("http://localhost:7136/Sensors/getAll")
-    //       .then((r) => {
-    //         return r.json();
-    //       })
-    //       .then((json) => {
-    //         this.data = json.slice(0, 1000);
-    //         this.loading = false;
-    //         return;
-    //       });
-    //   } catch (e) {
-    //     console.log(e);
-    //   }
-    // },
     toggleChart() {
       this.showChart = !this.showChart;
     },
-    submitFilter() {
-      if(this.data == null) this.loading = true;
-      // this.data = null;
-      let requestParameters = `?By=${this.sorting.currentSortBy}&Order=${this.sorting.currentSortOrder}&Limit=1000`;
+    computeRequestParameters() {
+      let requestParameters = `?By=${this.sorting.currentSortBy}&Order=${this.sorting.currentSortOrder}&Limit=5000`;
       if (this.filters.parameter != -1) {
         requestParameters += "&SensorTypes=" + this.filters.parameter;
       }
@@ -182,14 +185,17 @@ export default {
       }
       if (this.filters.dateFrom != null) {
         requestParameters +=
-          "&StartTime=" + dayjs(this.filters.dateFrom).format("YYYY/MM/DD");
+          "&StartTime=" + encodeURIComponent(dayjs(this.filters.dateFrom).format("YYYY-MM-DD HH:mm:ss"));
       }
       if (this.filters.dateTo != null) {
         requestParameters +=
-          "&EndTime=" +
-          dayjs(this.filters.dateTo).add(1, "day").format("YYYY/MM/DD");
+          "&EndTime=" + encodeURIComponent(dayjs(this.filters.dateTo).format("YYYY-MM-DD HH:mm:ss"));
       }
-      console.log(requestParameters)
+      return requestParameters;
+    },
+    submitFilter() {
+      if (this.data == null) this.loading = true;
+      const requestParameters = this.computeRequestParameters();
       try {
         fetch("http://localhost:7136/Sensors/Get" + requestParameters)
           .then((r) => {
@@ -209,18 +215,39 @@ export default {
       if (sortBy === this.sorting.currentSortBy) {
         this.sorting.currentSortOrder =
           this.sorting.currentSortOrder === 1 ? 0 : 1;
-      } else{
+      } else {
         this.sorting.currentSortOrder = 0;
       }
       this.sorting.currentSortBy = sortBy;
-      // console.log(this.sorting.currentSortBy + "  " + this.sorting.currentSortOrder)
       this.submitFilter();
     },
     downloadCsv() {
-      console.log("CSV");
+      const requestParameters = this.computeRequestParameters();
+      fetch("http://localhost:7136/Sensors/GetCsv" + requestParameters)
+        .then((response) => response.blob())
+        .then((blob) => {
+          const link = document.createElement("a");
+          link.href = window.URL.createObjectURL(blob);
+          link.download = "sensors.csv";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        })
+        .catch((error) => console.error("Error downloading CSV:", error));
     },
     downloadJson() {
-      console.log("JSON");
+      const requestParameters = this.computeRequestParameters();
+      fetch("http://localhost:7136/Sensors/GetJson" + requestParameters)
+        .then((response) => response.blob())
+        .then((blob) => {
+          const link = document.createElement("a");
+          link.href = window.URL.createObjectURL(blob);
+          link.download = "sensors.json";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        })
+        .catch((error) => console.error("Error downloading JSON:", error));
     },
   },
 };
@@ -228,7 +255,6 @@ export default {
 
 <style scoped>
 .container {
-  /* background: yellow; */
   min-height: 70vh;
   margin: 20px 0 20px 0;
   display: flex;
@@ -244,9 +270,6 @@ export default {
 }
 
 table {
-  /* background: red; */
-  /* border-radius: 50px; */
-  /* border-collapse: collapse; */
   width: 100%;
   box-shadow: inset -5px -5px 5px rgba(70, 70, 70, 0.1),
     inset 5px 5px 5px rgb(0, 0, 0, 0.2);
@@ -258,6 +281,10 @@ table {
 tr {
   transition: all 0.2s ease-in;
   /* cursor: pointer; */
+}
+
+.data-row:hover {
+  color: var(--color-accent);
 }
 
 th,

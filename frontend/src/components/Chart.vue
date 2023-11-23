@@ -1,7 +1,7 @@
 <template>
   <div class="backdrop" @click.self="closeAddHabit">
     <div class="container">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width:100%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px; width:100%;">
         <button @click="prevChart" :disabled="currChartIndex === 0">prev</button>
         <h1>{{ title }}</h1>
         <button @click="nextChart" :disabled="currChartIndex === displayData.length - 1">next</button>
@@ -78,7 +78,7 @@ export default {
         if (!acc[key]) {
           acc[key] = { time: [], instance: [], type: [], value: [] };
         }
-        acc[key].time.push(dayjs(obj.time).format("MM/DD HH:mm:ss"));
+        acc[key].time.push(dayjs(obj.time).format("DD/MM HH:mm:ss"));
         acc[key].instance.push(obj.instance);
         acc[key].type.push(obj.type);
         acc[key].value.push(obj.value);
@@ -90,32 +90,19 @@ export default {
     chartData() {
       this.title = `Device ${
         this.displayData[this.currChartIndex].instance[0]
-      }'s ${this.displayData[this.currChartIndex].type[0]} (top 100 values)`;
+      }'s ${this.displayData[this.currChartIndex].type[0]} (top 100 measurements)`;
       return {
-        labels: this.displayData[this.currChartIndex].time,
+        labels: this.displayData[this.currChartIndex].time.slice(0, 100),
         datasets: [
           {
             backgroundColor: "hsla(160, 100%, 37%, 1)",
             borderColor: "hsla(160, 100%, 17%, 1)",
-            data: this.displayData[this.currChartIndex].value,
+            data: this.displayData[this.currChartIndex].value.slice(0, 100),
           },
         ],
       };
     },
-
-    // dates() {
-    //   return this.data
-    //     .slice(0, 100)
-    //     .map((d) => dayjs(d.time).format("MM/DD HH:mm:ss"));
-    // },
-    // values() {
-    //   return this.data.slice(0, 100).map((d) => d.value);
-    // },
-    // title() {
-    //   return `Device ${this.data[0].instance}'s ${this.data[0].type} (top 100 values)`;
-    // },
   },
-  created() {},
 };
 </script>
 
@@ -146,7 +133,7 @@ export default {
 }
 
 button {
-  margin: 5px;
+  margin: 0px;
   height: 50px;
   border: 2px solid hsla(160, 100%, 17%, 1);
   min-width: 50px;
@@ -162,4 +149,9 @@ button {
 button:disabled {
   opacity:0.3;
 }
+
+button:enabled:hover {
+  border: 2px solid var(--color-accent);
+}
+
 </style>
